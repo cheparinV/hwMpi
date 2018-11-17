@@ -1,0 +1,2 @@
+# hwMpi
+KFU mpi homework
