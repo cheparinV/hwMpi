@@ -1,6 +1,8 @@
 #include "mpi.h"
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 void sendArrayToAllProcess(int *array, int processCount, int tag);
 
@@ -13,6 +15,8 @@ int *aCountZ(int *x_array, int *y_array, int size);
 int *bCountZ(int *x_array, int *y_array, int size);
 
 int main(int argc, char **argv) {
+
+    srand(time(0));
 
     int size, rank;
 
@@ -28,7 +32,9 @@ int main(int argc, char **argv) {
     int *array_x;
     int *array_y;
     if (rank == 0) {
+        printf("X array:\n");
         array_x = initArray(arrSize);
+        printf("Y array:\n");
         array_y = initArray(arrSize);
         sendArrayToAllProcess(array_x, size, 0);
         std::cout << "x send \n";
@@ -42,13 +48,13 @@ int main(int argc, char **argv) {
         MPI_Status status_y;
         MPI_Probe(0, 0, MPI_COMM_WORLD, &status_x);
         MPI_Get_count(&status_x, MPI_INT, &x_size);
-        printf("Recovery array_x size %d \n", x_size);
+        printf("Receive by %d array_x with size %d \n", rank, x_size);
         int *x_array = (int *) malloc(sizeof(int) * x_size);
         MPI_Recv(x_array, x_size, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
         MPI_Probe(0, 1, MPI_COMM_WORLD, &status_y);
         MPI_Get_count(&status_x, MPI_INT, &y_size);
-        printf("Recovery array_y size %d \n", y_size);
+        printf("Receive by %d array_y with size %d \n", rank, y_size);
         int *y_array = (int *) malloc(sizeof(int) * y_size);
         MPI_Recv(y_array, y_size, MPI_INT, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         int z_size = x_size > y_size ? x_size : y_size;
@@ -80,18 +86,17 @@ void receiveAllProcess(int processCount) {
         MPI_Status status;
         MPI_Probe(i, 2, MPI_COMM_WORLD, &status);
         MPI_Get_count(&status, MPI_INT, &size);
-        printf("Recv array_z size %d \n", size);
+        printf("Receive from %d array_z with size %d \n", i, size);
         int *array = (int *) malloc(sizeof(int) * size);
         MPI_Recv(array, size, MPI_INT, i, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         for (int j = 0; j < size; ++j) {
-            std::cout << array[i] << " ";
+            std::cout << array[j] << " ";
         }
         std::cout << '\n';
     }
 }
 
 int *initArray(int size) {
-    srand((unsigned) time(NULL));
     int* array = new int[size];
     for (int i = 0; i < size; i++) {
         array[i] = (rand() % 100) + 1;
