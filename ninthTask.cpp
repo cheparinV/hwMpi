@@ -11,7 +11,7 @@ int *initArray(int size);
 struct type{
     int value;
     int rank;
-};
+} result;
 
 int main(int argc, char **argv) {
 
@@ -42,10 +42,11 @@ int main(int argc, char **argv) {
         subMin = minOfArray(subArray, arrSize);
     }
 
-    MPI_Reduce(&subMin, &globalMin, 2, MPI_INT, MPI_MINLOC, 0, MPI_COMM_WORLD);
+    MPI_Reduce(&subMin, &result, 2, MPI_DOUBLE_INT, MPI_MINLOC, 0, MPI_COMM_WORLD);
 
     if (rank == 0) {
-        printf("Total min %d \n", globalMin);
+        printf("Total min rank %d \n", result.rank + 1);
+        printf("Total min %d \n", result.value);
     }
     MPI_Finalize();
 
