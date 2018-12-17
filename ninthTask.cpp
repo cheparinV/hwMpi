@@ -4,14 +4,16 @@
 #include <stdlib.h>
 #include <time.h>
 
-int minOfArray(int *array, int size);
-
-int *initArray(int size);
 
 struct type{
     int value;
     int rank;
 } result;
+
+type minOfArray(int *array, int size);
+
+int *initArray(int size);
+
 
 int main(int argc, char **argv) {
 
@@ -30,22 +32,25 @@ int main(int argc, char **argv) {
     int arrSize = 5;
     int *array = (int *) malloc(sizeof(int) * arrSize * size);
     if (rank == 0) {
-        array = initArray(arrSize * size);
+        array = initArray(arrSize * (size-1));
     }
     int *subArray = (int *) malloc(sizeof(int) * arrSize);
 
     MPI_Scatter(array, arrSize, MPI_INT, subArray, arrSize, MPI_INT, 0, MPI_COMM_WORLD);
 
-    int subMin;
+    type subMin;
+    subMin.value = 100;
+    subMin.rank = 0;
     int globalMin;
     if (rank != 0) {
         subMin = minOfArray(subArray, arrSize);
+        subMin.rank += rank * (arrSize - 1);
     }
 
-    MPI_Reduce(&subMin, &result, 2, MPI_DOUBLE_INT, MPI_MINLOC, 0, MPI_COMM_WORLD);
+    MPI_Reduce(&subMin, &result, 1, MPI_2INT, MPI_MINLOC, 0, MPI_COMM_WORLD);
 
     if (rank == 0) {
-        printf("Total min rank %d \n", result.rank + 1);
+        printf("Total min rank %d \n", result.rank);
         printf("Total min %d \n", result.value);
     }
     MPI_Finalize();
@@ -54,13 +59,20 @@ int main(int argc, char **argv) {
 
 }
 
-int minOfArray(int *array, int size) {
+type minOfArray(int *array, int size) {
     int min = array[0];
+    type min_type;
+    min_type.value = min;
+    min_type.rank = 0;
     for (int i = 0; i < size; ++i) {
-        min = min > array[i] ? array[i] : min;
+        if (min > array[i]) {
+            min = array[i];
+            min_type.value = min;
+            min_type.rank = i;
+        }
     }
     printf("Min of sub array %d \n", min);
-    return min;
+    return min_type;
 }
 
 int *initArray(int size) {
