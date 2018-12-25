@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
 
     printf("SIZE=%d RANK=%d\n", size, rank);
 
-    int arrSize = size - 1;
+    int arrSize = size;
     int *matrix = (int *) malloc(sizeof(int) * arrSize * arrSize);
     int *x_array = (int *) malloc(sizeof(int) * arrSize);
     if (rank == 0) {
@@ -34,27 +34,27 @@ int main(int argc, char **argv) {
         matrix = initMatrix(arrSize, arrSize);
     }
     int *subArray;
-    std::cout << "start broadcasting" << '\n';
+    //std::cout << "start broadcasting" << '\n';
 
     MPI_Bcast(x_array, arrSize, MPI_INT, 0, MPI_COMM_WORLD);
 
     MPI_Scatter(matrix, arrSize, MPI_FLOAT, subArray, arrSize, MPI_FLOAT, 0, MPI_COMM_WORLD);
-    std::cout << "broadcasted" << '\n';
-    MPI_Barrier(MPI_COMM_WORLD);
+    //std::cout << "broadcasted" << '\n';
+    //MPI_Barrier(MPI_COMM_WORLD);
     int sub_result = 0;
 
-    if (rank != 0) {
-        sub_result = multArrays(x_array, subArray, arrSize);
+
+    sub_result = multArrays(x_array, subArray, arrSize);
         //std::cout << sub_result << '\n';
-    }
-    MPI_Barrier(MPI_COMM_WORLD);
+
+    //MPI_Barrier(MPI_COMM_WORLD);
     int *result;
     if (rank == 0) {
         result = (int *) malloc(sizeof(int) * arrSize);
     }
 
     MPI_Gather(&sub_result, 1, MPI_FLOAT, result, 1, MPI_FLOAT, 0, MPI_COMM_WORLD);
-    MPI_Barrier(MPI_COMM_WORLD);
+    //MPI_Barrier(MPI_COMM_WORLD);
     if (rank == 0) {
         std::cout << "result" << '\n';
         for (int i = 0; i < arrSize + 2; i++) {

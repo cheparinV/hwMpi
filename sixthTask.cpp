@@ -28,27 +28,35 @@ int main(int argc, char **argv) {
 
     printf("SIZE=%d RANK=%d\n", size, rank);
 
+    MPI_Status a_status, b_status;
+    MPI_Request a_request1, a_request2;
+    MPI_Request b_request1, b_request2;
+
     int arrSize = 10;
     int *array;
     if (rank % 2 == 0) {
         array = initArray(arrSize);
     } else {
-        array = (int *) malloc(sizeof(int) * arrSize);
         array = initArray(arrSize);
     }
-    for (int j = 0; j < 10; ++j) {
-        if (rank % 2 == 0) {
-            MPI_Send(array, arrSize, MPI_INT, rank + 1, 0, MPI_COMM_WORLD);
+    for (int j = 0; j < 4; ++j) {
+        if (rank == 0) {
+            MPI_Isend(array, arrSize, MPI_INT, rank + 1, 0, MPI_COMM_WORLD, &a_request1);
+            MPI_Irecv(array, arrSize, MPI_INT, rank + 1, 0, MPI_COMM_WORLD, &a_request2);
+
+            MPI_Wait(&a_request1, &a_status);
             printf("Ping %d \n", rank);
-            MPI_Recv(array, arrSize, MPI_INT, rank + 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            //printf("Pong %d \n", rank);
+            MPI_Wait(&a_request2, &a_status);
+            printf("Pong %d \n", rank);
         }
-        if (rank % 2 != 0) {
-            MPI_Send(array, arrSize, MPI_INT, rank - 1, 0, MPI_COMM_WORLD);
-            MPI_Recv(array, arrSize, MPI_INT, rank - 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            //printf("Pong %d \n", rank);
-            //MPI_Send(array, arrSize, MPI_INT, rank - 1, 0, MPI_COMM_WORLD);
+        if (rank == 1) {
+            MPI_Isend(array, arrSize, MPI_INT, rank - 1, 0, MPI_COMM_WORLD, &b_request1);
+            MPI_Irecv(array, arrSize, MPI_INT, rank - 1, 0, MPI_COMM_WORLD, &b_request2);
+
+            MPI_Wait(&b_request1, &b_status);
             printf("Ping %d \n", rank);
+            MPI_Wait(&b_request2, &b_status);
+            printf("Pong %d \n", rank);
         }
 
     }

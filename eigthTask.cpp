@@ -26,8 +26,8 @@ int main(int argc, char **argv) {
     int *x_array = (int *) malloc(sizeof(int) * arrSize * size);
     int *y_array = (int *) malloc(sizeof(int) * arrSize * size);
     if (rank == 0) {
-        x_array = initArray(arrSize * size);
-        y_array = initArray(arrSize * size);
+        x_array = initArray(arrSize * (size));
+        y_array = initArray(arrSize * (size));
     }
     int *x_subArray = (int *) malloc(sizeof(int) * arrSize);
     int *y_subArray = (int *) malloc(sizeof(int) * arrSize);
@@ -37,9 +37,9 @@ int main(int argc, char **argv) {
 
     int subResult = 0;
     int scalarSum = 0;
-    if (rank != 0) {
-        subResult = scalarMultiply(x_subArray, y_subArray, arrSize);
-    }
+
+    subResult = scalarMultiply(x_subArray, y_subArray, arrSize);
+
     MPI_Reduce(&subResult, &scalarSum, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 
     if (rank == 0) {
@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
 
 }
 
-int scalarMultiply(int *x_array, int *y_array, int size) {
+int scalarMultiply(int* x_array, int* y_array, int size) {
     int sum = 0;
     for (int i = 0; i < size; ++i) {
         sum += x_array[i] * y_array[i];
@@ -64,7 +64,7 @@ int scalarMultiply(int *x_array, int *y_array, int size) {
 int *initArray(int size) {
     int *array = new int[size];
     for (int i = 0; i < size; i++) {
-        array[i] = (rand() % 10) + 1;
+        array[i] = (rand() % 5) + 1;
         std::cout << array[i] << " ";
     }
     std::cout << '\n';

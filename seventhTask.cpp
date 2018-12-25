@@ -33,9 +33,8 @@ int main(int argc, char **argv) {
 
     int subNorm;
     int allNorm;
-    if (rank != 0) {
-        subNorm = arrayNorm(subArray, arrSize);
-    }
+
+    subNorm = arrayNorm(subArray, arrSize);
 
     MPI_Reduce(&subNorm, &allNorm, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 
